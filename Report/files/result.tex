@@ -1,0 +1,33 @@
+\subsection{Property Verification}
+\subsubsection{Mandatory Properties}
+In this section we will describe the analyzed properties. The first two properties analyzed are the compulsory ones:
+\begin{itemize}
+    \item $\forall  \square(chargeOfTrain[Train\_id] > 0) $
+    \item $\forall \square(train.totalTravelTime <= train.actualMaximumDelay) $
+\end{itemize}
+
+We have created two configuration of the system: in the first one the two properties are satisfied, in the second one not.
+The difference between the two configuration is the max delay allowed.
+
+\paragraph{Configuration1} In this configuration the properties are satisfied \begin{itemize}
+    \item Max Delay Station 1-2 : 50
+    \item Max Delay Station 2-3 : 60
+\end{itemize}
+
+
+
+\paragraph{Configuration2}
+In this configuration the properties are not satisfied \begin{itemize}
+    \item Max Delay Station 1-2 : 25
+    \item Max Delay Station 2-3 : 30
+\end{itemize} The two properties could be satisfied even in this configuration if we increase the \textit{chargingMultiplier}
+
+
+\subsubsection{Additional Properties}
+We have written two additional properties, the first one to check that the number of free Tracks in a station is always greater or equal to 0,
+the second one to check that every train eventually reaches its destination.
+\begin{itemize}
+    \item $\forall  \square(stationFreeTracks[station\_id] >=  0) $
+    \item $\forall  \lozenge(trainStation[Train\_id] = trainDestination[Train\_id]) $
+\end{itemize}
+Both properties are satisfied in both configuration of the system.

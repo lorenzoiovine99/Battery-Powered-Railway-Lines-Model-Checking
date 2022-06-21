@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE nta PUBLIC '-//Uppaal Team//DTD Flat System 1.1//EN' 'http://www.it.uu.se/research/group/darts/uppaal/flat-1_2.dtd'>
+<nta>
+	<declaration>// Place global declarations here.
+const int nStations = 3;
+const int nTrains = 4;
+
+typedef int[0, nTrains-1] Train_t;
+typedef int[0, nStations-1] Station_t;
+
+const int chargingSpeed = 4;
+const int journeyDischargeMultiplier = 2;
+const double waitingDischargeMultiplier = 0.5;
+const int MIN_TIME_PER_STATION = 4;
+const int trainSpeed = 2; //km/min -&gt; 120 km/h
+
+const int[-1, nTrains] stationNumOfTracks[Station_t] = {2,3,2};
+int[-1, nStations-1] trainStation[Train_t] = {0,1,2,2}; 
+int[-1, nStations-1] trainDestination[Train_t] = {2,2,0,0};
+int[-1, nStations-1] nextStop[Train_t] = {1,2,1,1};
+int[-1, nTrains] stationFreeTracks[Station_t] = {1,2,0};
+int[0, 100] chargeOfTrain[Train_t] = {100,100,100,100};
+
+//matrix of distance between stations
+const int railLine_distance[nStations][nStations] = {{-1,40,-1}, {40,-1,48}, {-1,48,-1}}; //km
+//matrix of maximum delay between stations
+const int railLine_delay[nStations][nStations] = {{-1,50,-1}, {50,-1,60}, {-1,60,-1}};    //min
+//if we change the delay like that
+//const int railLine_delay[nStations][nStations] = {{-1,25,-1}, {25,-1,30}, {-1,30,-1}};      //min
+//int[-100, 100] chargeOfTrain[Train_t] = {100,100,100,100};
+//we don't satisfy both the basic ltl
+
+//channels
+urgent chan exitTrain[nStations];
+urgent chan full[nStations];
+urgent chan allowedIn[nStations];
+urgent chan arrived[nStations];
+
+
+
+</declaration>
+	<template>
+		<name x="5" y="5">Train</name>
+		<parameter>const Train_t train_id</parameter>
+		<declaration>clock x;
+int totalTravelTime = 0;
+int parkedTime = 0;
+int travelTime = 0;
+int waitingTime = 0;
+int actualMaximumDelay = 0;
+
+//find the next step in the train travel and if arrived at the end of the line destination is update
+void nextStep() {
+    if(trainDestination[train_id] &gt; trainStation[train_id])
+        nextStop[train_id]++;
+    else if(trainDestination[train_id] &lt; trainStation[train_id])
+        nextStop[train_id]--;
+    else if(trainDestination[train_id] == trainStation[train_id])
+    {
+        if(trainDestination[train_id] == 0) {
+            trainDestination[train_id] = 2;
+            nextStop[train_id]++;
+        }
+        else {
+            trainDestination[train_id] = 0;
+            nextStop[train_id]--;
+        }
+    }
+}
+
+//update the current station of the train
+void trainArrived() {
+    trainStation[train_id] = nextStop[train_id];
+}
+
+//update the total travel time of the train (parked time + travel time + waiting time)
+void updateTravelTime() {
+    totalTravelTime = parkedTime + travelTime + waitingTime;
+    parkedTime = 0;
+    travelTime = 0;
+    waitingTime = 0;
+}
+
+//time to charge the train
+int chargingTime(int id) {
+    //max delay - time to reach next station
+    int maximum = railLine_delay[trainStation[id]][nextStop[id]] - railLine_distance[trainStation[id]][nextStop[id]]/trainSpeed;
+    int chargingTime = maximum - chargeOfTrain[id]/chargingSpeed;
+
+    if(chargingTime &lt; MIN_TIME_PER_STATION){
+        return MIN_TIME_PER_STATION;
+    }
+    else {
+        return (chargingTime+MIN_TIME_PER_STATION)/2;
+    }
+}
+
+//discharge of the train battery during the travel
+void journeyDischarge() {
+    //the charge during the travel decrease linearly with the time (t = s/v)
+    if(trainDestination[train_id] == 0) {
+        travelTime = railLine_distance[trainStation[train_id]+1][nextStop[train_id]]/trainSpeed;
+        chargeOfTrain[train_id] -=  (railLine_distance[trainStation[train_id]+1][nextStop[train_id]]/trainSpeed)*journeyDischargeMultiplier;
+    }
+    else {
+        travelTime = railLine_distance[trainStation[train_id]-1][nextStop[train_id]]/trainSpeed;
+        chargeOfTrain[train_id] -=  (railLine_distance[trainStation[train_id]-1][nextStop[train_id]]/trainSpeed)*journeyDischargeMultiplier;
+    }
+}
+
+//discharge of the train battery during the waiting before entering the station
+void waitingDischarge() {
+    //the charge during the waiting decrease linearly with the waiting time
+    int waiting = 100;
+    Station_t nextStop = nextStop[train_id]; 
+    int i;
+
+    for(i=0; i&lt;nTrains; i++) {
+        if(chargingTime(i)&lt;waiting &amp;&amp; trainStation[i] == nextStop){
+            waiting=chargingTime(i);
+        }
+    }
+
+    waitingTime = waiting;
+    chargeOfTrain[train_id] = chargeOfTrain[train_id] - fint(waiting*waitingDischargeMultiplier);
+}
+
+//update the train charge
+void charge() {
+    //the charge of the train increase linearly with the charging time
+    parkedTime = chargingTime(train_id);
+    if (chargeOfTrain[train_id] + chargingTime(train_id)*chargingSpeed &gt;= 100)
+        chargeOfTrain[train_id] = 100;
+    else
+        chargeOfTrain[train_id] += chargingTime(train_id)*chargingSpeed; 
+}
+
+void resetTotalTravelTime() {
+    totalTravelTime = 0;
+}
+
+void setMaximumDelay() {
+    actualMaximumDelay = railLine_delay[trainStation[train_id]][nextStop[train_id]];
+}
+
+
+
+</declaration>
+		<location id="id0" x="-68" y="263">
+			<name x="-93" y="229">travelling</name>
+		</location>
+		<location id="id1" x="212" y="399">
+			<name x="204" y="408">waiting</name>
+		</location>
+		<location id="id2" x="977" y="493">
+			<name x="901" y="501">clockChecker</name>
+			<urgent/>
+		</location>
+		<location id="id3" x="212" y="263">
+			<name x="169" y="229">arrivedAtStation</name>
+		</location>
+		<location id="id4" x="722" y="399">
+			<name x="705" y="408">parked</name>
+		</location>
+		<location id="id5" x="51" y="399">
+			<name x="0" y="391">buffer</name>
+		</location>
+		<init ref="id4"/>
+		<transition>
+			<source ref="id5"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="51" y="433">arrived[nextStop[train_id]]!</label>
+			<label kind="assignment" x="119" y="416">x=0</label>
+			<nail x="85" y="433"/>
+			<nail x="178" y="433"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id5"/>
+			<label kind="guard" x="119" y="340">x&gt;=1</label>
+			<nail x="178" y="357"/>
+			<nail x="85" y="357"/>
+		</transition>
+		<transition>
+			<source ref="id4"/>
+			<target ref="id2"/>
+			<label kind="guard" x="773" y="382">x&gt;=chargingTime(train_id)</label>
+			<label kind="assignment" x="756" y="399">charge(), resetTotalTravelTime()</label>
+			<nail x="977" y="399"/>
+		</transition>
+		<transition>
+			<source ref="id1"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="365" y="382">allowedIn[nextStop[train_id]]?</label>
+			<label kind="assignment" x="306" y="399">waitingDischarge(), nextStep(), updateTravelTime(), x=0</label>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id4"/>
+			<label kind="synchronisation" x="365" y="246">allowedIn[nextStop[train_id]]?</label>
+			<label kind="assignment" x="306" y="263">journeyDischarge(), nextStep(), updateTravelTime(), x=0</label>
+			<nail x="722" y="263"/>
+		</transition>
+		<transition>
+			<source ref="id2"/>
+			<target ref="id0"/>
+			<label kind="synchronisation" x="306" y="476">exitTrain[trainStation[train_id]]!</label>
+			<label kind="assignment" x="340" y="493">setMaximumDelay()</label>
+			<nail x="646" y="493"/>
+			<nail x="-68" y="493"/>
+		</transition>
+		<transition>
+			<source ref="id3"/>
+			<target ref="id1"/>
+			<label kind="synchronisation" x="221" y="314">full[nextStop[train_id]]?</label>
+			<label kind="assignment" x="221" y="331">journeyDischarge(), x =0</label>
+		</transition>
+		<transition>
+			<source ref="id0"/>
+			<target ref="id3"/>
+			<label kind="synchronisation" x="-17" y="246">arrived[nextStop[train_id]]!</label>
+			<label kind="assignment" x="25" y="263">trainArrived()</label>
+		</transition>
+	</template>
+	<template>
+		<name>Station</name>
+		<parameter>const Station_t id</parameter>
+		<declaration>void trainEnter(){
+    stationFreeTracks[id]--;
+}
+
+void trainExit(){
+    stationFreeTracks[id]++;
+}</declaration>
+		<location id="id6" x="-535" y="-629">
+			<name x="-637" y="-654">notFullTracks</name>
+		</location>
+		<location id="id7" x="-535" y="-425">
+			<name x="-611" y="-425">fullTracks</name>
+		</location>
+		<location id="id8" x="-263" y="-629">
+			<name x="-306" y="-663">trainIsEntering</name>
+			<urgent/>
+		</location>
+		<location id="id9" x="-790" y="-527">
+			<name x="-841" y="-544">start</name>
+		</location>
+		<location id="id10" x="-263" y="-425">
+			<name x="-272" y="-417">checkFullTracks</name>
+		</location>
+		<init ref="id9"/>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id7"/>
+			<label kind="synchronisation" x="-570" y="-357">arrived[id]?</label>
+			<nail x="-595" y="-357"/>
+			<nail x="-476" y="-357"/>
+		</transition>
+		<transition>
+			<source ref="id7"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-620" y="-544">exitTrain[id]?</label>
+			<label kind="assignment" x="-603" y="-527">trainExit()</label>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-467" y="-544">stationFreeTracks[id]!=0</label>
+			<nail x="-322" y="-527"/>
+			<nail x="-475" y="-527"/>
+		</transition>
+		<transition>
+			<source ref="id10"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-467" y="-442">stationFreeTracks[id]==0</label>
+			<nail x="-331" y="-425"/>
+			<nail x="-476" y="-425"/>
+		</transition>
+		<transition>
+			<source ref="id8"/>
+			<target ref="id10"/>
+			<label kind="synchronisation" x="-255" y="-552">allowedIn[id]!</label>
+			<label kind="assignment" x="-255" y="-535">trainEnter()</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id8"/>
+			<label kind="synchronisation" x="-433" y="-629">arrived[id]?</label>
+		</transition>
+		<transition>
+			<source ref="id6"/>
+			<target ref="id6"/>
+			<label kind="synchronisation" x="-570" y="-731">exitTrain[id]?</label>
+			<label kind="assignment" x="-561" y="-714">trainExit()</label>
+			<nail x="-459" y="-714"/>
+			<nail x="-604" y="-714"/>
+			<nail x="-543" y="-646"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id7"/>
+			<label kind="guard" x="-765" y="-442">stationFreeTracks[id]==0</label>
+			<nail x="-790" y="-425"/>
+		</transition>
+		<transition>
+			<source ref="id9"/>
+			<target ref="id6"/>
+			<label kind="guard" x="-748" y="-629">stationFreeTracks[id]!=0</label>
+			<nail x="-790" y="-629"/>
+		</transition>
+	</template>
+	<system>// Place template instantiations here.
+
+// List one or more processes to be composed into a system.
+system Train, Station;
+
+
+    </system>
+	<queries>
+		<query>
+			<formula>A[] forall (i : Train_t) chargeOfTrain[Train(i).train_id] &gt; 0</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>A[] forall(i:Train_t) Train(i).totalTravelTime &lt;= Train(i).actualMaximumDelay</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>A[] forall(i:Station_t) stationFreeTracks[i] &gt;= 0</formula>
+			<comment></comment>
+		</query>
+		<query>
+			<formula>E&lt;&gt; forall(i:Train_t) trainStation[i] == trainDestination[i]</formula>
+			<comment></comment>
+		</query>
+	</queries>
+</nta>

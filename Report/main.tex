@@ -1,0 +1,116 @@
+\input{commandsFile}
+\usepackage{listings}
+
+\begin{document}
+
+%TITLE PAGE
+
+%LOGO
+
+{\begin{titlepage}
+     \begin{center}
+         \includegraphics[width=0.4\textwidth]{images/PolimiLogo.png}
+
+         \vspace{0.2cm}
+
+         \Large Computer Science and Engineering
+
+         \vspace{0.9cm}
+
+         \Huge \textbf{Model Checking of Battery-Powered Railway Lines}
+
+         \vspace{0.7cm}
+         \huge Formal Method for Concurrent and Real Time Systems Project
+
+         \vspace{1.5cm}
+         \Large Academic year 2021 - 2022\\
+         \vspace{1cm}
+         24 June 2022\\Version 1.0
+         \vspace{3cm}
+
+         \large
+         \begin{minipage}{.1\textwidth}
+             \null
+         \end{minipage}%
+         \begin{minipage}{.4\textwidth}
+             \textit{Authors}:\\
+             Lorenzo IOVINE\\
+             Nicola LANDINI\\
+             Francesco LEONE
+         \end{minipage}%
+         \begin{minipage}{.4\textwidth}
+             \raggedleft
+             \textit{Professors}:\\
+             Pierluigi SAN PIETRO\\
+             Livia LESTINGI\\
+             \phantom{placeholder}
+         \end{minipage}%
+         \begin{minipage}{.1\textwidth}
+             \null
+         \end{minipage}
+
+
+     \end{center}
+\end{titlepage}}~\\
+
+%TITLE
+
+%Define deliverable specific info
+%Replace cell contents where needed
+\begin{table}[h!]
+    \begin{tabu} to \textwidth { X[0.3,r,p] X[0.7,l,p] }
+    \hline
+
+    \textbf{Deliverable:} & Formal Method for Concurrent and Real Time Systems project\\
+    \textbf{Title:} & Model Checking of Battery-Powered Railway Lines \\
+    \textbf{Authors:} & Lorenzo Iovine, Nicola Landini, Francesco Leone\\
+    \textbf{Version:} & 1.0 \\
+    \textbf{Date:} & 24-June-2022 \\
+    \textbf{Copyright:} & Copyright © 2022, Lorenzo Iovine, Nicola Landini, Francesco Leone – All rights reserved \\
+    \hline
+    \end{tabu}
+\end{table}
+
+
+
+
+\setcounter{page}{2}
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+\newpage
+\addcontentsline{toc}{section}{Table of Contents}
+\tableofcontents
+\newpage
+\addcontentsline{toc}{section}{List of Figures}
+\listoffigures
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+\clearpage
+{\color{Blue}{\section{Design}}}
+\label{sect:design}
+\input{Files/design}
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+\clearpage
+{\color{Blue}{\section{UPPAAL Model}}}
+\label{sect:uppaal}
+\input{Files/uppaal}
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+\clearpage
+{\color{Blue}{\section{Analysis and Results}}}
+\label{sect:result}
+\input{Files/result}
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+\clearpage
+{\color{Blue}{\section{Conclusion}}}
+\label{sect:conclusion}
+\input{Files/conclusion}
+
+%------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+\end{document}
