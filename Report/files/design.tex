@@ -50,9 +50,32 @@ The trains that we designed have constant speed set to 120km/h. They are initial
 \bigskip
 
 \subsection{Design assumptions}
-In order to efficiently describe the model, we decided to set a railway in which every station has less tracks than the total
-number of train train, in order to obtain much more often situations in which a train has to wait to have the permission to enter
-his next station.\\
-Furthermore we decided not to design the railway with a dedicated template. That's because the railway's most important features are
-implicitly designed and verified, without creating additional variables.\\
-In the end, another assumptions that we made to simplify the description is that we assumed the clock unit as a minute.
+In order to efficiently describe the model, we decided to make the following assumptions:
+\begin{itemize}
+    \item Every station has less tracks than the total number of train.
+    \item A clock unit is equal to a minute.
+    \item For each train the destination is the last station, except for the one that start from the last one who has
+    as destination the first station.
+    \item The lower bound to allow passengers to get on and off the train is of 4 clock unit.
+    \item We incluce a charging multiplier and two different discharging multiplier, one for the waiting and one for the travel.
+\end{itemize}
+
+\bigskip
+
+\subsection{Design Choices}
+\begin{itemize}
+    \item We decided not to design the railway with a dedicated template. That's because the railway's most important features
+    are implicitly designed and verified, without creating additional variables.
+    \item In order to save time when checking properties we avoid redundant clocks for operations that are not issued in parallel.
+    \item Our \emph{Recharge Policy} is based on a control made in function \textit{chargingTime} in the \textit{Train Template},
+    that allows to recharge the train at least for the lower bound (described before). In case the train needs more time to 
+    recharge in order to get to the next station, the time spent in the station is the mean value between the lower bound
+    and the upper bound (calculated as follows: $MaximumDelay-\frac{DistanceToNextStation}{trainSpeed}$) in order not 
+    to overcome the maximum delay. We thought that this is a good compromise between charging the train and have some delay 
+    in reaching the next station.
+    \item In order to model the station, the distances and the maximum delays between stations we used two matrices. It is enough 
+    to change the number of trains/stations, initialize them and update the matrices, and the system will "adapt" to the 
+    new configuration.
+    \item All the variables that could be declared as constant, are declared as constant, in order to save time when checking properties.
+\end{itemize}
+
