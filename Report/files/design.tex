@@ -5,7 +5,7 @@ making their way into the rail transport sector. Battery-powered trains are alre
 Japan, Austria, and Britain. Italy is also planning on producing and deploying fully-electric trains starting mid-2022,
 thanks to a deal with Hitachi Rail.\\
 \\ Like any electric vehicle, trains can cover a limited distance running only on battery power before needing to recharge.
-In this project, we will model a railway line in which electric trains can either recharge in a station. Nevertheless,
+In this project, we will model a railway line in which electric trains can recharge in a station. Nevertheless,
 trains must still reach the following station on time; in case of excessive delay, the company is obliged to issue
 monetary compensation to the passengers.\\
 \\ Precisely, given a set of simplifying assumptions, we will model the main actors of the system as a network of \textbf{Timed Automata (TA)}
@@ -40,7 +40,7 @@ The stations have the following initial configurations:
 \end{itemize}
 \newpage
 
-The trains that we designed have constant speed set to 120km/h. They are initialized as follows:
+The trains that we designed have constant speed set to 120 km/h. They are initialized as follows:
 \begin{itemize}
     \item \textbf{Train 0 - charge 100: } starts from station 0 with station 2 as destination
     \item \textbf{Train 1 - charge 100: } starts from station 1 with station 2 as destination
@@ -52,12 +52,12 @@ The trains that we designed have constant speed set to 120km/h. They are initial
 \subsection{Design assumptions}
 In order to efficiently describe the model, we decided to make the following assumptions:
 \begin{itemize}
-    \item Every station has less tracks than the total number of train.
+    \item Every station has less tracks than the total number of trains.
     \item A clock unit is equal to a minute.
     \item For each train the destination is the last station, except for the one that start from the last one who has
     as destination the first station.
     \item The lower bound to allow passengers to get on and off the train is of 4 clock unit.
-    \item We incluce a charging multiplier and two different discharging multiplier, one for the waiting and one for the travel.
+    \item We set a charging multiplier and two different discharging multiplier, one for the waiting and one for the travel.
 \end{itemize}
 
 \bigskip

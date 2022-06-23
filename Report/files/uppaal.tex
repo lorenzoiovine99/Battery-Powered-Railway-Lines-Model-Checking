@@ -12,7 +12,7 @@
         waitingDischargeMultiplier      & A multiplier for the battery discharge during the waiting \\  \hline
         MIN\_TIME\_PER\_STATION         & Lower bound to allow passengers to get on and off the train \\    \hline
         trainSpeed                      & Trains' speed \\   \hline
-        stationNumOfTracks              & Array with the number of tracks of each station \\   \hline
+        stationNumOfTracks              & Array containing the number of tracks of each station \\   \hline
         railLine\_distance              & Matrix containing the distance between stations \\    \hline
         railLine\_delay                 & Matrix containing the maximum delay between stations \\   \hline
     \end{tabu}
@@ -73,7 +73,7 @@
 \subsubsection{Train}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=0.56]{images/trainTemplate.png}
+    \includegraphics[scale=0.45]{images/trainTemplate.png}
 \end{figure}
 
 \begin{itemize}
@@ -112,7 +112,7 @@
     x                       & This is the clock used to temporalize the system \\  \hline
     totalTravelTime         & An int that represents the overall time to reach the next station \\    \hline
     parkedTime              & An int that represents the time spent in a station \\    \hline
-    travelTime              & An int that represents the time spent in the journey \\  \hline
+    travelTime              & An int that represents the time spent travelling \\  \hline
     waitingTime             & An int that represents the time wasted until the station authorizes the access \\  \hline
     actualMaximumDelay      & An int used to save the maximum delay allowed to reach the next station \\    \hline
     \end{tabu}
